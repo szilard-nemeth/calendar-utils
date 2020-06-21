@@ -57,10 +57,11 @@ class CalendarEvent:
 
 @auto_str
 class Week:
-    def __init__(self, start_date, end_date, week_no):
+    def __init__(self, start_date, end_date, week_no, year):
         self.start_date = convert_to_datetime(start_date)
         self.end_date = convert_to_datetime(end_date, end_of_day=True)
         self.week_no = week_no
+        self.year = year
 
     def __repr__(self):
         return self.__str__()
@@ -129,7 +130,7 @@ class AllWeeks:
         for i, date in enumerate(week_list):
             if i + 1 < len(week_list):
                 week_id = str(year) + "-" + str(i + 1)
-                result.append(Week(date, week_list[i + 1] - datetime.timedelta(1), week_id))
+                result.append(Week(date, week_list[i + 1] - datetime.timedelta(1), week_id, year))
         return result
 
     @staticmethod
@@ -247,12 +248,30 @@ class CalendarStats:
         events_by_week = self.get_events_by_week(all_weeks, sorted_events)
 
         LOG.info("Listing of summarized length of meetings per week...")
+
+        yearly_sum = dict([(y, 0) for y in years])
+        now = datetime.datetime.now(tz=UTC)
         for week_obj, ev_list in events_by_week.items():
             sum_length_in_mins = 0
             for ev in ev_list:
                 sum_length_in_mins += ev.length
             sum_length_in_hours = sum_length_in_mins / 60
             LOG.info("%s: %d", week_obj.week_no, sum_length_in_hours)
+
+            # Only add weeks to yearly sum that precedes (or same as) current week
+            if week_obj.start_date.year != now.year or \
+                    (week_obj.start_date.year == now.year and (week_obj.end_date < now or week_obj.start_date < now)):
+                # LOG.info("Added week to yearly sum: %s", week_obj)
+                yearly_sum[week_obj.year] += sum_length_in_hours
+
+        for year, sum in yearly_sum.items():
+            if now.year == year:
+                avg = sum / now.isocalendar()[1]
+            else:
+                avg = sum / 52
+            LOG.info("Average hours of meetings per week in year %d: %d", year, avg)
+
+
 
     def parse_events(self):
         cal_file = open(self.file, 'rb')
