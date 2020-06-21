@@ -32,6 +32,20 @@ class CalendarEvent:
     def spans_more_days(self):
         return self.end_time.day - self.start_time.day
 
+    def is_within_last_week_of_year(self):
+        year = self.get_year()
+
+        from_date = datetime.datetime(year, 12, 25, 00, 00, 00, tzinfo=UTC)
+        to_date = datetime.datetime(year, 12, 31, 23, 59, 59, tzinfo=UTC)
+        return from_date <= self.start_time and self.end_time <= to_date
+
+    def is_within_first_week_of_year(self):
+        year = self.get_year()
+
+        from_date = datetime.datetime(year, 1, 1, 00, 00, 00, tzinfo=UTC)
+        to_date = datetime.datetime(year, 1, 7, 23, 59, 59, tzinfo=UTC)
+        return from_date <= self.start_time and self.end_time <= to_date
+
     def calculate_length(self):
         time_delta = (self.end_time - self.start_time)
         total_seconds = time_delta.total_seconds()
@@ -82,13 +96,32 @@ class AllWeeks:
             LOG.info("Ignoring multi day event: %s", event)
             return None
         # double check start date
-        if week_obj.start_date <= event.start_time and week_obj.end_date > event.end_time:
+        if self._check_if_event_date_within_week_range(event, week_obj):
             # print("OK")
             pass
         else:
-            # TODO Print more info of event
-            LOG.error("NOT OK")
+            if event.is_within_last_week_of_year():
+                # For dates of year-12-31, sometimes week number can be 1.
+                # Let's check the last week of the year then instead of checking 1st week as per index.
+                # TODO add warning log here
+                week_obj = self.weeks_by_year[year][-1]
+                self._check_if_event_date_within_week_range(event, week_obj, raise_error=True)
+            elif event.is_within_first_week_of_year():
+                # For dates of year-01-01 and onwards, sometimes week can be stored for the previous year.
+                # Let's try to look it up from the last week of previous year.
+                # TODO add warning log here
+                week_obj = self.weeks_by_year[year - 1][-1]
+                self._check_if_event_date_within_week_range(event, week_obj, raise_error=True)
+            else:
+                raise Exception("Event is not in range of week. Event: {}, week: {}".format(event, week_obj))
         return week_obj
+
+    @staticmethod
+    def _check_if_event_date_within_week_range(event, week_obj, raise_error=False):
+        res = week_obj.start_date <= event.start_time and week_obj.end_date > event.end_time
+        if not res and raise_error:
+            raise Exception("Event is not in range of week. Event: {}, week: {}".format(event, week_obj))
+        return res
 
     @staticmethod
     def convert_to_week_objs(week_list, year):
@@ -109,14 +142,20 @@ class AllWeeks:
         MONTH = {'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4, 'MAY': 5, 'JUNE': 6, 'JULY': 7, 'AUGUST': 8,
                  'SEPTEMBER': 9, 'OCTOBER': 10, 'NOVEMBER': 11, 'DECEMBER': 12}
         year = int(year)
-        month = MONTH['DECEMBER']
+        month = MONTH['JANUARY']
         day = WEEK['MONDAY']
-        # dt = datetime.date(year, month, 1)
-        dt = datetime.date(year - 1, month, 31)
-        dt = AllWeeks._find_next_monday(day, dt)
+        thursday = WEEK['THURSDAY']
 
-        monday_from_last_year = False
-        if dt.year != year:
+        # https://www.epochconverter.com/weeknumbers
+        # Week number according to the ISO-8601 standard, weeks starting on Monday.
+        # The first week of the year is the week that contains that year's first Thursday
+        # (='First 4-day week'). ISO representation: 2020-W25
+        dt = datetime.date(year, month, 1)
+        if dt.weekday() >= thursday:
+            dt = AllWeeks._find_next_monday(day, dt)
+            monday_from_last_year = False
+        else:
+            dt = AllWeeks._find_prev_monday(day, dt)
             monday_from_last_year = True
 
         weeks = []
@@ -146,6 +185,13 @@ class AllWeeks:
         if dt.weekday() > 0:
             while dt.weekday() != day:
                 dt = dt + datetime.timedelta(days=1)
+        return dt
+
+    @staticmethod
+    def _find_prev_monday(day, dt):
+        if dt.weekday() > 0:
+            while dt.weekday() != day:
+                dt = dt - datetime.timedelta(days=1)
         return dt
 
 
