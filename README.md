@@ -1,6 +1,5 @@
-# Myproject
+# Calendar statistics
 
-<PROJECT_GENERIC_DESCRIPTION>
 
 ### Getting started / Setup
 
@@ -10,15 +9,11 @@ Run make from the project's root directory, all python dependencies required by 
 
 ## Running the tests
 
-TODO
-
 ## Main dependencies
 
 * [icalendar](https://icalendar.readthedocs.io/en/latest/about.html)  icalendar is a Python library to parse ICS files.
 
 ## Contributing
-
-TODO
 
 ## Authors
 
@@ -26,12 +21,6 @@ TODO
 
 ## License
 
-TODO
-
 ## Acknowledgments
 
-TODO
-
 ## Example commands
-
-TODO
