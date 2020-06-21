@@ -23,6 +23,7 @@ class Config:
                             help='Input file (ics)')
 
         parser.add_argument("-e", "--event-exceptions", nargs="+", default=[])
+        parser.add_argument("--filter-year", nargs="+", default=[])
 
         args = parser.parse_args()
         print("Parsed cmd line args: " + str(args))

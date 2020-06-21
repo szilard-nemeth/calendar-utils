@@ -220,6 +220,7 @@ class CalendarStats:
         self.conf = conf
         self.file = self.conf.args.file
         self.exceptions = self.conf.args.event_exceptions
+        self.filter_year = list(map(int, self.conf.args.filter_year))
 
     def start(self):
         events = self.parse_events()
@@ -228,6 +229,10 @@ class CalendarStats:
             removed_events = [x for x in events if x.summary in self.exceptions]
             events = [x for x in events if x.summary not in self.exceptions]
             LOG.info("Removed events as exceptions: %s", removed_events)
+
+        if self.filter_year:
+            LOG.info("Filtering events, only with years: %s", self.filter_year)
+            events = filter(lambda x: x.get_year() in self.filter_year, events)
 
         sorted_events = sorted(events, key=lambda x: x.start_time)
 
