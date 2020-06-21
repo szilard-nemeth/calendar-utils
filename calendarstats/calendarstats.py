@@ -117,8 +117,6 @@ class AllWeeks:
             monday_from_last_year = True
 
         weeks = []
-        lst_month = MONTH.values()
-        sorted(lst_month)
         while True:
             weeks.append(dt)
             prev_dt = dt
