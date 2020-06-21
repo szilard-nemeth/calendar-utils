@@ -116,11 +116,11 @@ class AllWeeks:
         if dt.year != year:
             monday_from_last_year = True
 
-        dow_lst = []
+        weeks = []
         lst_month = MONTH.values()
         sorted(lst_month)
         while True:
-            dow_lst.append(dt)
+            weeks.append(dt)
             prev_dt = dt
             dt = dt + datetime.timedelta(days=7)
             if monday_from_last_year:
@@ -130,9 +130,9 @@ class AllWeeks:
             if prev_dt.month == 12 and dt.month != 12:
                 prev_dt = dt + datetime.timedelta(-7)
                 dt = AllWeeks._find_next_monday(day, prev_dt, force=True)
-                dow_lst.append(dt)
+                weeks.append(dt)
                 break
-        return dow_lst
+        return weeks
 
     @staticmethod
     def _find_next_monday(day, dt, force=False):
