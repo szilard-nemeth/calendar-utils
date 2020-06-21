@@ -11,6 +11,8 @@ from pytz import UTC # timezone
 
 from utils import auto_str
 
+from config import Config
+
 LOG = logging.getLogger(__name__)
 
 @auto_str
@@ -84,6 +86,7 @@ class AllWeeks:
             # print("OK")
             pass
         else:
+            # TODO Print more info of event
             print("NOT OK")
         return week_obj
 
@@ -167,8 +170,9 @@ def convert_to_datetime(date, start_of_day=False, end_of_day=False):
 
 
 class CalendarStats:
-    def __init__(self):
-        pass
+    def __init__(self, conf):
+        self.conf = conf
+        self.file = self.conf.args.file
 
     def start(self):
         events = self.parse_events()
@@ -199,7 +203,7 @@ class CalendarStats:
             print(week_obj.week_no + ": " + str(sum_length))
 
     def parse_events(self):
-        cal_file = open('/Users/szilardnemeth/Downloads/snemeth@cloudera.com.ics', 'rb')
+        cal_file = open(self.file, 'rb')
         gcal = Calendar.from_ical(cal_file.read())
         events = []
         for component in gcal.walk():
@@ -224,15 +228,10 @@ class CalendarStats:
 if __name__ == '__main__':
     start_time = time.time()
 
-    # Parse args
-    # args = Setup.parse_args()
-    cal_stats = CalendarStats()
-
-    # Initialize logging
-    # verbose = True if args.verbose else False
-    # Setup.init_logger(cal_stats.log_dir, console_debug=verbose)
-
+    conf = Config()
+    cal_stats = CalendarStats(conf)
     cal_stats.start()
+
     end_time = time.time()
     LOG.info("Execution of script took %d seconds", end_time - start_time)
 
