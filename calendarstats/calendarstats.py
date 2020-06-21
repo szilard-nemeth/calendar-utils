@@ -219,10 +219,23 @@ class CalendarStats:
     def __init__(self, conf):
         self.conf = conf
         self.file = self.conf.args.file
+        self.exceptions = self.conf.args.event_exceptions
 
     def start(self):
         events = self.parse_events()
+
+        if self.exceptions:
+            removed_events = [x for x in events if x.summary in self.exceptions]
+            events = [x for x in events if x.summary not in self.exceptions]
+            LOG.info("Removed events as exceptions: %s", removed_events)
+
         sorted_events = sorted(events, key=lambda x: x.start_time)
+
+        LOG.info("Printing unique event names (A-Z)...")
+        unique_event_names = set(map(lambda x: x.summary, sorted_events))
+        sorted_unique_event_names = sorted(list(unique_event_names))
+        for event_name in sorted_unique_event_names:
+            LOG.info(event_name)
 
         years = get_all_years(sorted_events)
         all_weeks = AllWeeks(years)

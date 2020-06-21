@@ -22,6 +22,8 @@ class Config:
         parser.add_argument('-f', '--file', dest='file', default=None, required=True,
                             help='Input file (ics)')
 
+        parser.add_argument("-e", "--event-exceptions", nargs="+", default=[])
+
         args = parser.parse_args()
         print("Parsed cmd line args: " + str(args))
 
@@ -61,7 +63,8 @@ class Config:
         verbose = True if self.args.verbose else False
         self.init_logger(self.log_dir, console_debug=verbose)
 
-    def setup_dirs(self):
+    @staticmethod
+    def setup_dirs():
         home = expanduser("~")
         project_out_root = os.path.join(home, "calendarstats")
         log_dir = os.path.join(project_out_root, 'logs')
