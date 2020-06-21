@@ -23,7 +23,7 @@ class Config:
                             help='Input file (ics)')
 
         args = parser.parse_args()
-        print("Args: " + str(args))
+        print("Parsed cmd line args: " + str(args))
 
         return args
 

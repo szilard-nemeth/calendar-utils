@@ -68,7 +68,7 @@ class AllWeeks:
         try:
             week_obj = self.weeks_by_year[year][week - 1]
         except IndexError:
-            print("IndexError for year: " + str(year))
+            LOG.error("IndexError for year: %d", year)
             # Last week of 2020
             # 2021.01.01 --> Week of 53 in 2020
             # Week 53, 2020	December 28, 2020	January 3, 2021
@@ -79,7 +79,7 @@ class AllWeeks:
             week_obj = self.weeks_by_year[year - 1][week - 1]
 
         if event.spans_more_days():
-            print("Ignoring multi day event: " + str(event))
+            LOG.info("Ignoring multi day event: %s", event)
             return None
         # double check start date
         if week_obj.start_date <= event.start_time and week_obj.end_date > event.end_time:
@@ -87,7 +87,7 @@ class AllWeeks:
             pass
         else:
             # TODO Print more info of event
-            print("NOT OK")
+            LOG.error("NOT OK")
         return week_obj
 
     @staticmethod
@@ -193,14 +193,14 @@ class CalendarStats:
 
         ordered_dict = collections.OrderedDict(sorted(events_by_week.items()))
 
-        print("Listing of Length of meetings per week...")
+        LOG.info("Listing of summarized length of meetings per week...")
         for week_obj, ev_list in ordered_dict.items():
             # print("Week: " + week_obj.week_no + ": " + str(ev_list))
             sum_length = 0
             for ev in ev_list:
                 sum_length += ev.length
             sum_length /= 60
-            print(week_obj.week_no + ": " + str(sum_length))
+            LOG.info("%s: %d", week_obj.week_no, sum_length)
 
     def parse_events(self):
         cal_file = open(self.file, 'rb')
