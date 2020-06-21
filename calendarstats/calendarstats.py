@@ -1,5 +1,7 @@
 import collections
 import copy
+import logging
+import time
 
 from icalendar import Calendar, Event
 # from datetime import datetime
@@ -9,6 +11,7 @@ from pytz import UTC # timezone
 
 from utils import auto_str
 
+LOG = logging.getLogger(__name__)
 
 @auto_str
 class CalendarEvent:
@@ -69,6 +72,7 @@ class AllWeeks:
             # Week 53, 2020	December 28, 2020	January 3, 2021
             # Week 01, 2021	January 4, 2021	January 10, 2021
             if week > 52:
+                # TODO why this may happen?
                 week = 52
             week_obj = self.weeks_by_year[year - 1][week - 1]
 
@@ -164,61 +168,73 @@ def convert_to_datetime(date, start_of_day=False, end_of_day=False):
         return datetime.datetime(date.year, date.month, date.day, 23, 59, 59, tzinfo=UTC)
 
 
-cal_file = open('/Users/szilardnemeth/Downloads/snemeth@cloudera.com.ics', 'rb')
-gcal = Calendar.from_ical(cal_file.read())
+class CalendarStats:
+    def __init__(self):
+        pass
 
-events = []
-for component in gcal.walk():
-    if component.name == "VEVENT":
-        summary = component.get('summary')
-        start_date = component.get('dtstart').dt
-        end_date = component.get('dtend').dt
-        dtstamp = component.get('dtstamp').dt
+    def start(self):
+        events = self.parse_events()
+        sorted_events = sorted(events, key=lambda x: x.start_time)
 
-        if type(start_date) is datetime.date:
-            # print("Found date instance: " + str(start_date))
-            start_date = convert_to_datetime(start_date)
+        years = get_all_years(sorted_events)
+        all_weeks = AllWeeks(years)
 
-        if type(end_date) is datetime.date:
-            # print("Found date instance: " + str(end_date))
-            end_date = convert_to_datetime(end_date)
-        events.append(CalendarEvent(summary, start_date, end_date))
-cal_file.close()
+        events_by_week = {}
+        for ev in events:
+            week_obj = all_weeks.get_week_obj_of_event(ev)
+            if not week_obj:
+                continue
 
-# events.sort(key=lambda x: x.start_time, reverse=False)
-sorted_events = sorted(events, key=lambda x: x.start_time)
+            if week_obj not in events_by_week:
+                events_by_week[week_obj] = []
+            events_by_week[week_obj].append(ev)
 
-for ev in events:
-    pass
-    # print(ev)
+        ordered_dict = collections.OrderedDict(sorted(events_by_week.items()))
 
-years = get_all_years(events)
-all_weeks = AllWeeks(years)
+        print("Listing of Length of meetings per week...")
+        for week_obj, ev_list in ordered_dict.items():
+            # print("Week: " + week_obj.week_no + ": " + str(ev_list))
+            sum_length = 0
+            for ev in ev_list:
+                sum_length += ev.length
+            sum_length /= 60
+            print(week_obj.week_no + ": " + str(sum_length))
+
+    def parse_events(self):
+        cal_file = open('/Users/szilardnemeth/Downloads/snemeth@cloudera.com.ics', 'rb')
+        gcal = Calendar.from_ical(cal_file.read())
+        events = []
+        for component in gcal.walk():
+            if component.name == "VEVENT":
+                summary = component.get('summary')
+                start_date = component.get('dtstart').dt
+                end_date = component.get('dtend').dt
+                dtstamp = component.get('dtstamp').dt
+
+                if type(start_date) is datetime.date:
+                    # print("Found date instance: " + str(start_date))
+                    start_date = convert_to_datetime(start_date)
+
+                if type(end_date) is datetime.date:
+                    # print("Found date instance: " + str(end_date))
+                    end_date = convert_to_datetime(end_date)
+                events.append(CalendarEvent(summary, start_date, end_date))
+        cal_file.close()
+        return events
 
 
-events_by_week = {}
-for ev in events:
-    week_obj = all_weeks.get_week_obj_of_event(ev)
-    if not week_obj:
-        continue
+if __name__ == '__main__':
+    start_time = time.time()
 
-    if week_obj not in events_by_week:
-        events_by_week[week_obj] = []
-    events_by_week[week_obj].append(ev)
+    # Parse args
+    # args = Setup.parse_args()
+    cal_stats = CalendarStats()
 
+    # Initialize logging
+    # verbose = True if args.verbose else False
+    # Setup.init_logger(cal_stats.log_dir, console_debug=verbose)
 
-ordered_dict = collections.OrderedDict(sorted(events_by_week.items()))
-
-print("Listing of Length of meetings on Weeks...")
-for week_obj, ev_list in ordered_dict.items():
-    # print("Week: " + week_obj.week_no + ": " + str(ev_list))
-    sum_length = 0
-    for ev in ev_list:
-        sum_length += ev.length
-    sum_length /= 60
-    print(week_obj.week_no + ": " + str(sum_length))
-
-
-# print(events_by_week)
-
+    cal_stats.start()
+    end_time = time.time()
+    LOG.info("Execution of script took %d seconds", end_time - start_time)
 
