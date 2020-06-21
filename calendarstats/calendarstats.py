@@ -180,27 +180,15 @@ class CalendarStats:
 
         years = get_all_years(sorted_events)
         all_weeks = AllWeeks(years)
-
-        events_by_week = {}
-        for ev in events:
-            week_obj = all_weeks.get_week_obj_of_event(ev)
-            if not week_obj:
-                continue
-
-            if week_obj not in events_by_week:
-                events_by_week[week_obj] = []
-            events_by_week[week_obj].append(ev)
-
-        ordered_dict = collections.OrderedDict(sorted(events_by_week.items()))
+        events_by_week = self.get_events_by_week(all_weeks, sorted_events)
 
         LOG.info("Listing of summarized length of meetings per week...")
-        for week_obj, ev_list in ordered_dict.items():
-            # print("Week: " + week_obj.week_no + ": " + str(ev_list))
-            sum_length = 0
+        for week_obj, ev_list in events_by_week.items():
+            sum_length_in_mins = 0
             for ev in ev_list:
-                sum_length += ev.length
-            sum_length /= 60
-            LOG.info("%s: %d", week_obj.week_no, sum_length)
+                sum_length_in_mins += ev.length
+            sum_length_in_hours = sum_length_in_mins / 60
+            LOG.info("%s: %d", week_obj.week_no, sum_length_in_hours)
 
     def parse_events(self):
         cal_file = open(self.file, 'rb')
@@ -223,6 +211,20 @@ class CalendarStats:
                 events.append(CalendarEvent(summary, start_date, end_date))
         cal_file.close()
         return events
+
+    def get_events_by_week(self, all_weeks, events):
+        events_by_week = {}
+        for event in events:
+            week_obj = all_weeks.get_week_obj_of_event(event)
+            if not week_obj:
+                # TODO log error?
+                continue
+
+            if week_obj not in events_by_week:
+                events_by_week[week_obj] = []
+            events_by_week[week_obj].append(event)
+        ordered_dict = collections.OrderedDict(sorted(events_by_week.items()))
+        return ordered_dict
 
 
 if __name__ == '__main__':
