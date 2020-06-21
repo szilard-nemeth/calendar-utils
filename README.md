@@ -25,4 +25,4 @@ Run make from the project's root directory, all python dependencies required by 
 
 ## Example commands
 
-```calendarstats.py -f /Users/szilardnemeth/Downloads/snemeth@cloudera.com.ics --event-exceptions "Lunch" "REM: Rainbow Sheet!" "Busy [Usual shifted day]" "CDP-Data Center 7.1 Checkpoint Meeting" --filter-year 2019 2020```
+```calendarstats.py -f /Users/szilardnemeth/Downloads/snemeth@cloudera.com.ics --event-exceptions "Lunch" "REM: Rainbow Sheet!" "Busy [Usual shifted day]" "CDP-Data Center 7.1 Checkpoint Meeting" "Board game afternoon in Budapest" --filter-year 2019 2020```
