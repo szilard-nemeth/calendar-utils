@@ -1,18 +1,12 @@
 import collections
-import copy
 import logging
 import time
-
-from icalendar import Calendar, Event
-# from datetime import datetime
-# from datetime import date
+from icalendar import Calendar
 import datetime
+
+from pythoncommons.string_utils import auto_str
 from pytz import UTC # timezone
-
-from utils import auto_str
-
 from config import Config
-
 LOG = logging.getLogger(__name__)
 
 @auto_str
@@ -270,8 +264,6 @@ class CalendarStats:
             else:
                 avg = sum / 52
             LOG.info("Average hours of meetings per week in year %d: %d", year, avg)
-
-
 
     def parse_events(self):
         cal_file = open(self.file, 'rb')

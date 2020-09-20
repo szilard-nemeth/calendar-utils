@@ -6,7 +6,7 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 from os.path import expanduser
 
-from utils import FileUtils
+from pythoncommons.file_utils import FileUtils
 
 
 class Config:
