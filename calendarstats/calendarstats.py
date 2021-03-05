@@ -9,6 +9,7 @@ from pytz import UTC # timezone
 from config import Config
 LOG = logging.getLogger(__name__)
 
+
 @auto_str
 class CalendarEvent:
     def __init__(self, summary, start_time, end_time):
@@ -47,6 +48,11 @@ class CalendarEvent:
 
     def __repr__(self):
         return self.__str__()
+
+    def __eq__(self, other):
+        return self.start_time == other.start_time and \
+               self.end_time == other.end_time and \
+               self.summary == other.summary
 
 
 @auto_str
@@ -221,9 +227,7 @@ class CalendarStats:
         events = self.parse_events()
 
         if self.exceptions:
-            removed_events = [x for x in events if x.summary in self.exceptions]
-            events = [x for x in events if x.summary not in self.exceptions]
-            LOG.info("Removed events as exceptions: %s", removed_events)
+            events = self.filter_events_by_exceptions(events)
 
         if self.filter_year:
             LOG.info("Filtering events, only with years: %s", self.filter_year)
@@ -264,6 +268,20 @@ class CalendarStats:
             else:
                 avg = sum / 52
             LOG.info("Average hours of meetings per week in year %d: %d", year, avg)
+
+    def filter_events_by_exceptions(self, events):
+        removed_events = []
+        for ex in self.exceptions:
+            for event in events:
+                if ex in event.summary:
+                    removed_events.append(event)
+        LOG.info("Removing events as exceptions: %s", removed_events)
+
+        for evt_remove in removed_events:
+            if evt_remove in events:
+                events.remove(evt_remove)
+
+        return events
 
     def parse_events(self):
         cal_file = open(self.file, 'rb')
