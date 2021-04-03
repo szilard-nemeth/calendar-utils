@@ -8,6 +8,8 @@ from os.path import expanduser
 
 from pythoncommons.file_utils import FileUtils
 
+PROJECT_NAME = "calendarstats"
+
 
 class Config:
     def parse_args(self):
@@ -67,7 +69,7 @@ class Config:
     @staticmethod
     def setup_dirs():
         home = expanduser("~")
-        project_out_root = os.path.join(home, "calendarstats")
+        project_out_root = os.path.join(home, PROJECT_NAME)
         log_dir = os.path.join(project_out_root, 'logs')
         FileUtils.ensure_dir_created(project_out_root)
         FileUtils.ensure_dir_created(log_dir)
