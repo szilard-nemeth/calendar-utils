@@ -1,12 +1,8 @@
 import argparse
-import datetime
 import logging
-import os
 import sys
 from logging.handlers import TimedRotatingFileHandler
-from os.path import expanduser
-
-from pythoncommons.file_utils import FileUtils
+from pythoncommons.project_utils import ProjectUtils
 
 PROJECT_NAME = "calendarstats"
 
@@ -32,16 +28,15 @@ class Config:
 
         return args
 
-    def init_logger(self, log_dir, console_debug=False):
+    @staticmethod
+    def init_logger(console_debug=False):
         # get root logger
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
 
         # create file handler which logs even debug messages
-        logfilename = datetime.datetime.now().strftime(
-            'calendarstats-%Y_%m_%d_%H%M%S.log')
-
-        fh = TimedRotatingFileHandler(os.path.join(log_dir, logfilename), when='midnight')
+        logfilename = ProjectUtils.get_default_log_file(PROJECT_NAME)
+        fh = TimedRotatingFileHandler(logfilename, when='midnight')
         fh.suffix = '%Y_%m_%d.log'
         fh.setLevel(logging.DEBUG)
 
@@ -59,19 +54,12 @@ class Config:
         logger.addHandler(ch)
 
     def __init__(self):
-        self.project_out_root, self.log_dir = self.setup_dirs()
+        self.setup_dirs()
         self.args = self.parse_args()
-
-        # Initialize logging
         verbose = True if self.args.verbose else False
-        self.init_logger(self.log_dir, console_debug=verbose)
+        Config.init_logger(console_debug=verbose)
 
     @staticmethod
     def setup_dirs():
-        home = expanduser("~")
-        project_out_root = os.path.join(home, PROJECT_NAME)
-        log_dir = os.path.join(project_out_root, 'logs')
-        FileUtils.ensure_dir_created(project_out_root)
-        FileUtils.ensure_dir_created(log_dir)
-
-        return project_out_root, log_dir
+        ProjectUtils.get_output_basedir(PROJECT_NAME)
+        ProjectUtils.get_logs_dir()
