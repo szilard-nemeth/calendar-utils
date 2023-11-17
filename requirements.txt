@@ -1,2 +1,0 @@
-icalendar
-git+https://github.com/szilard-nemeth/python-commons.git

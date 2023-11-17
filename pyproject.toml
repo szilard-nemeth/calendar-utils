@@ -1,0 +1,57 @@
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.poetry]
+name = "calendar-utils"
+version = "1.0.0"
+description = ""
+authors = ["Szilard Nemeth <szilard.nemeth88@gmail.com>"]
+keywords = ["calendar utils"]
+readme = "README.md"
+homepage = "https://github.com/szilard-nemeth/calendar-utils"
+repository = "https://github.com/szilard-nemeth/calendar-utils"
+packages = [{include = "modules"}]
+include = [
+"LICENSE"
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.8.12"
+python-common-lib = "1.0.8"
+requests = "*"
+icalendar = "5.0.11"
+
+
+[tool.poetry.group.dev.dependencies]
+requests = "*"
+flake8 = "6.0.0"
+pytest = "*"
+pytest-html = "*"
+pytest-cov = "*"
+pre-commit = "*"
+httpretty = "*"
+black = "*"
+autopep8 = "*"
+
+[tool.poetry.group.localdev.dependencies]
+python-common-lib = { path = "../python-commons/", develop = false }
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
