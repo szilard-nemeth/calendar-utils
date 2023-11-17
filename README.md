@@ -1,4 +1,4 @@
-# Calendar statistics
+# Calendar utilities
 
 
 ### Getting started / Setup
