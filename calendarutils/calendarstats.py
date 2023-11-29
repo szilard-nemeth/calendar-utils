@@ -1,6 +1,8 @@
 import collections
 import logging
 import time
+from os.path import expanduser
+
 from icalendar import Calendar
 import datetime
 
@@ -8,7 +10,6 @@ from pythoncommons.string_utils import auto_str
 from pytz import UTC # timezone
 from config import Config
 LOG = logging.getLogger(__name__)
-
 
 @auto_str
 class CalendarEvent:
