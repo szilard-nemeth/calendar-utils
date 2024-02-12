@@ -24,7 +24,7 @@ keywords = ["calendar utils"]
 readme = "README.md"
 homepage = "https://github.com/szilard-nemeth/calendar-utils"
 repository = "https://github.com/szilard-nemeth/calendar-utils"
-packages = [{include = "modules"}]
+packages = [{include = "calendarutils"}]
 include = [
 "LICENSE"
 ]
